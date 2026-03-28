@@ -5,7 +5,7 @@ from app.schemas import ChatResponse, Message
 
 
 class StubOpenAIProvider(BaseProvider):
-    async def complete(self, messages: list[Message]) -> ChatResponse:
+    async def get_response(self, messages: list[Message]) -> ChatResponse:
         last_message = get_last_user_message(messages)
 
         if last_message and DIAGRAM_PATTERN.search(last_message.content):
