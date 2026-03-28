@@ -1,4 +1,4 @@
-.PHONY: install dev test
+.PHONY: install dev test lint
 
 install:
 	uv sync --extra dev
@@ -8,3 +8,7 @@ dev:
 
 test:
 	uv run pytest
+
+lint:
+	uv run ruff check .
+	uv run mypy app
