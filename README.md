@@ -51,3 +51,9 @@ This starts both servers concurrently:
 ```bash
 make -C backend test
 ```
+
+### Run E2E tests
+
+```bash
+make -C frontend e2e
+```
