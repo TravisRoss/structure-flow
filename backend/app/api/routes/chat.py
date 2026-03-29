@@ -12,7 +12,7 @@ async def chat(
     request: ChatRequest,
     settings: Settings = Depends(get_settings),
 ) -> ChatResponse:
-    provider = get_provider(settings.model_provider)
+    provider = get_provider(settings.model_provider, settings)
 
     try:
         return await provider.get_response(request.messages)
