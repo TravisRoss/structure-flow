@@ -7,10 +7,11 @@ interface MessageFormProps {
 
 export function MessageForm({ isLoading, onSubmit }: MessageFormProps) {
   const [inputValue, setInputValue] = useState("");
+  const isEmpty = inputValue.trim() === "";
 
   const handleSubmit = (event: React.SyntheticEvent<HTMLFormElement>): void => {
     event.preventDefault();
-    if (!inputValue.trim()) return;
+    if (isEmpty) return;
 
     onSubmit(inputValue);
     setInputValue("");
@@ -34,15 +35,15 @@ export function MessageForm({ isLoading, onSubmit }: MessageFormProps) {
       />
       <button
         type="submit"
-        disabled={isLoading}
+        disabled={isLoading || isEmpty}
         style={{
           padding: "0.75rem 1.5rem",
           backgroundColor: "#007bff",
           color: "white",
           border: "none",
           borderRadius: "4px",
-          cursor: isLoading ? "not-allowed" : "pointer",
-          opacity: isLoading ? 0.6 : 1,
+          cursor: isLoading || isEmpty ? "not-allowed" : "pointer",
+          opacity: isLoading || isEmpty ? 0.6 : 1,
         }}
       >
         {isLoading ? "Sending..." : "Send"}
