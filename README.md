@@ -26,3 +26,28 @@ cp backend/.env.example backend/.env
 ```
 
 The default config (`MODEL_PROVIDER=stub_openai`) uses stub responses — no API keys required.
+
+### Install dependencies
+
+```bash
+make install
+```
+
+### Run
+
+```bash
+make dev
+```
+
+This starts both servers concurrently:
+
+| Server | URL |
+|--------|-----|
+| Frontend | http://localhost:5173 |
+| Backend | http://localhost:8000 |
+
+### Run backend tests
+
+```bash
+make -C backend test
+```
