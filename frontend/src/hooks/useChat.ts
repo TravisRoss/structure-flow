@@ -2,7 +2,7 @@ import { useState } from "react";
 import { sendMessage } from "../api/client";
 import type { ChatResponse, Message } from "../types";
 
-interface UseChat {
+export interface UseChat {
   messages: Message[];
   isLoading: boolean;
   error: string | null;
