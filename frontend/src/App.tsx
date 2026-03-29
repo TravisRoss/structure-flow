@@ -9,10 +9,10 @@ function App() {
 
   return (
     <div style={{ display: "flex", height: "100vh" }}>
-      <div style={{ width: "400px", flexShrink: 0 }}>
+      <div style={{ width: "25%" }}>
         <ChatPanel chatState={chatState} />
       </div>
-      <div style={{ flex: 1 }}>
+      <div style={{ width: "75%" }}>
         <MermaidDiagram diagramCode={currentDiagram} />
       </div>
     </div>
