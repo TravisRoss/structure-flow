@@ -4,9 +4,10 @@ import type { Message } from "../../types";
 
 interface MessageListProps {
   messages: Message[];
+  isLoading: boolean;
 }
 
-export function MessageList({ messages }: MessageListProps) {
+export function MessageList({ messages, isLoading }: MessageListProps) {
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -49,6 +50,19 @@ export function MessageList({ messages }: MessageListProps) {
           </p>
         </div>
       ))}
+      {isLoading && (
+        <div
+          style={{
+            padding: "0.75rem",
+            borderRadius: "4px",
+            backgroundColor: "#f0f0f0",
+            color: "#999",
+            fontSize: "0.875rem",
+          }}
+        >
+          Thinking...
+        </div>
+      )}
       <div ref={bottomRef} />
     </div>
   );

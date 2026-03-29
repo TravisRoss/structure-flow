@@ -16,7 +16,7 @@ export function ChatPanel({ chatState: { messages, isLoading, error, submitMessa
         borderRight: "1px solid #ddd",
       }}
     >
-      <MessageList messages={messages} />
+      <MessageList messages={messages} isLoading={isLoading} />
 
       {error && (
         <div
