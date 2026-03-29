@@ -31,13 +31,15 @@ A split-screen web application that turns natural language into diagrams through
 
 ### Configure environment
 
+To configure the app, copy the example environment file:
+
 ```bash
 cp backend/.env.example backend/.env
 ```
 
 The default config (`MODEL_PROVIDER=stub_openai`) uses stub responses — no API keys required.
 
-To use the real Claude integration, set in `backend/.env`:
+To use the real Claude integration, set the following in `backend/.env`:
 
 ```
 MODEL_PROVIDER=anthropic
@@ -46,17 +48,19 @@ ANTHROPIC_API_KEY=your-key-here
 
 ### Install dependencies
 
+To install all dependencies for both the frontend and backend, run:
+
 ```bash
 make install
 ```
 
 ### Run
 
+To start both servers concurrently, run:
+
 ```bash
 make dev
 ```
-
-This starts both servers concurrently:
 
 | Server | URL |
 |--------|-----|
@@ -65,14 +69,15 @@ This starts both servers concurrently:
 
 ## Testing
 
-### Backend unit tests
+To run all tests at once, run:
 
 ```bash
-make -C backend test
+make test
 ```
 
-### E2E tests
+To run them individually:
 
 ```bash
-make -C frontend e2e
+make -C backend test   # backend unit tests only
+make -C frontend e2e   # E2E tests only
 ```

@@ -3,7 +3,8 @@
     "allow": [
       "Bash(uv --version)",
       "Bash(npm install:*)",
-      "Bash(npx playwright:*)"
+      "Bash(npx playwright:*)",
+      "Bash(uv run:*)"
     ]
   }
 }

@@ -1,12 +1,15 @@
 import pytest
 from httpx import ASGITransport, AsyncClient
 
+from app.core.config import Settings, get_settings
 from app.main import app
 
 
-@pytest.fixture
-def anyio_backend() -> str:
-    return "asyncio"
+@pytest.fixture(autouse=True)
+def override_settings() -> None:
+    app.dependency_overrides[get_settings] = lambda: Settings(model_provider="stub_openai")
+    yield
+    app.dependency_overrides.clear()
 
 
 @pytest.fixture

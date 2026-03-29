@@ -1,4 +1,4 @@
-.PHONY: install dev lint
+.PHONY: install dev lint test
 
 install:
 	make -C backend install
@@ -10,3 +10,7 @@ dev:
 lint:
 	make -C backend lint
 	make -C frontend lint
+
+test:
+	make -C backend test
+	make -C frontend e2e
