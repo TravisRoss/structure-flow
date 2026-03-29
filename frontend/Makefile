@@ -1,4 +1,4 @@
-.PHONY: install dev lint
+.PHONY: install dev lint e2e
 
 install:
 	npm install
@@ -8,3 +8,6 @@ dev:
 
 lint:
 	npm run lint
+
+e2e:
+	npx playwright test
