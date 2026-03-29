@@ -10,11 +10,16 @@ const ChatResponseSchema = z.object({
 }) satisfies z.ZodType<ChatResponse>;
 
 export async function sendMessage(request: ChatRequest): Promise<ChatResponse> {
-  const response = await fetch(`${API_BASE_URL}/api/chat`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(request),
-  });
+  let response: Response;
+  try {
+    response = await fetch(`${API_BASE_URL}/api/chat`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(request),
+    });
+  } catch {
+    throw new Error("Unable to reach the server. Please check that the backend is running.");
+  }
 
   if (!response.ok) {
     const errorResponse = await response.json().catch(() => ({ detail: "Unknown error" })) as { detail: string };
