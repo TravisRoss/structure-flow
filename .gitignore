@@ -13,5 +13,8 @@ dist/
 # Playwright
 frontend/test-results/
 
+# Vitest
+frontend/coverage/
+
 # Claude Code
 .claude/*
