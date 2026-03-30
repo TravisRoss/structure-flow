@@ -4,6 +4,8 @@ A split-screen web application that turns natural language into diagrams through
 
 ![Structure Flow in action](docs/screenshot.png)
 
+![Structure Flow diagram example](docs/screenshot2.png)
+
 ## Features
 
 - **Conversational diagramming** — describe what you want in plain English and the AI generates a Mermaid.js diagram instantly
@@ -13,13 +15,13 @@ A split-screen web application that turns natural language into diagrams through
 
 ## Stack
 
-| Layer | Technology |
-|-------|-----------|
-| Frontend | React + TypeScript + Vite |
-| Diagramming | Mermaid.js |
-| Backend | FastAPI (Python) |
-| AI | Anthropic, OpenAI (provider-agnostic) |
-| Package management | uv |
+| Layer              | Technology                            |
+| ------------------ | ------------------------------------- |
+| Frontend           | React + TypeScript + Vite             |
+| Diagramming        | Mermaid.js                            |
+| Backend            | FastAPI (Python)                      |
+| AI                 | Anthropic, OpenAI (provider-agnostic) |
+| Package management | uv                                    |
 
 ## Getting started
 
@@ -62,10 +64,10 @@ To start both servers concurrently, run:
 make dev
 ```
 
-| Server | URL |
-|--------|-----|
+| Server   | URL                   |
+| -------- | --------------------- |
 | Frontend | http://localhost:5173 |
-| Backend | http://localhost:8000 |
+| Backend  | http://localhost:8000 |
 
 ## Testing
 
