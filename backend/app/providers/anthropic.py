@@ -33,7 +33,7 @@ class AnthropicProvider(BaseProvider):
 
     async def get_response(self, messages: list[Message]) -> ChatResponse:
         response = await self._client.messages.create(
-            model="claude-opus-4-6",
+            model="claude-sonnet-4-6",
             max_tokens=1024,
             system=_SYSTEM_PROMPT,
             tools=[_CREATE_DIAGRAM_TOOL],
@@ -59,7 +59,7 @@ class AnthropicProvider(BaseProvider):
 
     async def stream_response(self, messages: list[Message]) -> AsyncIterator[str]:
         async with self._client.messages.stream(
-            model="claude-opus-4-6",
+            model="claude-sonnet-4-6",
             max_tokens=1024,
             system=_SYSTEM_PROMPT,
             tools=[_CREATE_DIAGRAM_TOOL],
