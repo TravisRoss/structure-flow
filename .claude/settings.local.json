@@ -4,7 +4,9 @@
       "Bash(uv --version)",
       "Bash(npm install:*)",
       "Bash(npx playwright:*)",
-      "Bash(uv run:*)"
+      "Bash(uv run:*)",
+      "Bash(python -m pytest tests/test_utils.py -v)",
+      "Bash(python -m pytest tests/test_providers.py -v)"
     ]
   }
 }

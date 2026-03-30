@@ -1,3 +1,6 @@
+import json
+from collections.abc import AsyncIterator
+
 import anthropic
 
 from app.providers.base import BaseProvider
@@ -53,6 +56,30 @@ class AnthropicProvider(BaseProvider):
             message=text or "Here's your diagram.",
             diagram=diagram,
         )
+
+    async def stream_response(self, messages: list[Message]) -> AsyncIterator[str]:
+        async with self._client.messages.stream(
+            model="claude-opus-4-6",
+            max_tokens=1024,
+            system=_SYSTEM_PROMPT,
+            tools=[_CREATE_DIAGRAM_TOOL],
+            messages=self._format_messages(messages),
+        ) as stream:
+            async for text_delta in stream.text_stream:
+                yield f"data: {json.dumps({'type': 'text_delta', 'delta': text_delta})}\n\n"
+
+            final_message = await stream.get_final_message()
+            for content_block in final_message.content:
+                is_diagram_tool = (
+                    content_block.type == "tool_use"
+                    and content_block.name == "create_diagram"
+                )
+                if is_diagram_tool:
+                    diagram_code = content_block.input.get("mermaid_code", "")
+                    if diagram_code != "":
+                        yield f"data: {json.dumps({'type': 'diagram', 'code': diagram_code})}\n\n"
+
+        yield f"data: {json.dumps({'type': 'done'})}\n\n"
 
     def _format_messages(self, messages: list[Message]) -> list[dict[str, str]]:
         formatted = []
