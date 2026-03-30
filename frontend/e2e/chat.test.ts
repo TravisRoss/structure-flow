@@ -1,57 +1,107 @@
-import { test, expect } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
 
-const TEXT_RESPONSE = {
-  message: "Hi! I can help you create diagrams.",
-  diagram: null,
-};
+const STUB_TEXT_RESPONSE =
+  "[stub_anthropic] Hi! I can help you visualise processes as diagrams. What would you like to create?";
+const STUB_DIAGRAM_RESPONSE = "I've generated a diagram based on your request.";
 
-const DIAGRAM_RESPONSE = {
-  message: "Here's your diagram.",
-  diagram: "graph TD\n  A[Start] --> B[End]",
-};
+async function sendMessage(page: Page, text: string): Promise<void> {
+  await page.getByPlaceholder("Type your message...").fill(text);
+  await page.getByRole("button", { name: "Send" }).click();
+}
 
 test.beforeEach(async ({ page }) => {
   await page.goto("/");
 });
 
-test("shows empty chat and diagram placeholder on first visit", async ({ page }) => {
+test("shows empty chat and diagram placeholder on first visit", async ({
+  page,
+}) => {
   await expect(page.getByText("Start a conversation...")).toBeVisible();
   await expect(page.getByText("Your diagram will appear here")).toBeVisible();
 });
 
 test("user sends a message and sees the response", async ({ page }) => {
-  await page.route("**/api/chat", (route) => route.fulfill({ json: TEXT_RESPONSE }));
-
-  await page.getByPlaceholder("Type your message...").fill("hi");
-  await page.getByRole("button", { name: "Send" }).click();
+  await sendMessage(page, "hi");
 
   await expect(page.getByText("hi", { exact: true })).toBeVisible();
-  await expect(page.getByText(TEXT_RESPONSE.message)).toBeVisible();
+  await expect(page.getByText(STUB_TEXT_RESPONSE)).toBeVisible();
   await expect(page.getByText("Your diagram will appear here")).toBeVisible();
 });
 
 test("user requests a diagram and sees it appear", async ({ page }) => {
-  await page.route("**/api/chat", (route) => route.fulfill({ json: DIAGRAM_RESPONSE }));
+  await sendMessage(page, "Create a flowchart");
 
-  await page.getByPlaceholder("Type your message...").fill("Create a flowchart");
-  await page.getByRole("button", { name: "Send" }).click();
+  await expect(page.getByText(STUB_DIAGRAM_RESPONSE)).toBeVisible();
+  await expect(
+    page.getByText("Your diagram will appear here"),
+  ).not.toBeVisible();
+});
 
-  await expect(page.getByText(DIAGRAM_RESPONSE.message)).toBeVisible();
-  await expect(page.getByText("Your diagram will appear here")).not.toBeVisible();
+test("shows an error banner if the backend is unreachable", async ({
+  page,
+}) => {
+  await page.route("**/api/chat/stream", (route) => route.abort());
+
+  await sendMessage(page, "hi");
+
+  await expect(
+    page.getByText(
+      "Unable to reach the server. Please check that the backend is running.",
+    ),
+  ).toBeVisible();
+});
+
+test("clears the input field after sending a message", async ({ page }) => {
+  await sendMessage(page, "hi");
+  await expect(page.getByText(STUB_TEXT_RESPONSE)).toBeVisible();
+
+  await expect(page.getByPlaceholder("Type your message...")).toHaveValue("");
+});
+
+test("clears the error banner when the next message succeeds", async ({
+  page,
+}) => {
+  await page.route("**/api/chat/stream", (route) => route.abort());
+  await sendMessage(page, "hi");
+  await expect(
+    page.getByText(
+      "Unable to reach the server. Please check that the backend is running.",
+    ),
+  ).toBeVisible();
+
+  await page.unroute("**/api/chat/stream");
+  await sendMessage(page, "hi");
+  await expect(
+    page.getByText(
+      "Unable to reach the server. Please check that the backend is running.",
+    ),
+  ).not.toBeVisible();
+  await expect(page.getByText(STUB_TEXT_RESPONSE)).toBeVisible();
+});
+
+test("preserves conversation history across multiple turns", async ({
+  page,
+}) => {
+  await sendMessage(page, "hi");
+  await expect(page.getByText(STUB_TEXT_RESPONSE)).toBeVisible();
+
+  await sendMessage(page, "Create a flowchart");
+  await expect(page.getByText(STUB_DIAGRAM_RESPONSE)).toBeVisible();
+
+  await expect(page.getByText("hi", { exact: true })).toBeVisible();
+  await expect(page.getByText(STUB_TEXT_RESPONSE)).toBeVisible();
+  await expect(
+    page.getByText("Create a flowchart", { exact: true }),
+  ).toBeVisible();
 });
 
 test("diagram is replaced when user requests a new one", async ({ page }) => {
-  await page.route("**/api/chat", (route) => route.fulfill({ json: TEXT_RESPONSE }));
+  await sendMessage(page, "hi");
+  await expect(page.getByText(STUB_TEXT_RESPONSE)).toBeVisible();
 
-  await page.getByPlaceholder("Type your message...").fill("hi");
-  await page.getByRole("button", { name: "Send" }).click();
-  await expect(page.getByText(TEXT_RESPONSE.message)).toBeVisible();
-
-  await page.route("**/api/chat", (route) => route.fulfill({ json: DIAGRAM_RESPONSE }));
-
-  await page.getByPlaceholder("Type your message...").fill("now create a flowchart");
-  await page.getByRole("button", { name: "Send" }).click();
-
-  await expect(page.getByText(DIAGRAM_RESPONSE.message)).toBeVisible();
-  await expect(page.getByText("Your diagram will appear here")).not.toBeVisible();
+  await sendMessage(page, "now create a flowchart");
+  await expect(page.getByText(STUB_DIAGRAM_RESPONSE)).toBeVisible();
+  await expect(
+    page.getByText("Your diagram will appear here"),
+  ).not.toBeVisible();
 });
