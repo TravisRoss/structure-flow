@@ -11,6 +11,7 @@ A split-screen web application that turns natural language into diagrams through
 - **Conversational diagramming** — describe what you want in plain English and the AI generates a Mermaid.js diagram instantly
 - **Context-aware** — follow-up messages refine or extend the current diagram, with the full conversation history passed to the model each turn
 - **Split-screen layout** — chat on the left, live diagram on the right
+- **Persistent conversations** — conversations are saved to a local SQLite database, so your diagram history survives page refreshes and server restarts
 - **Swappable AI providers** — toggle between providers via a single environment variable; ships with OpenAI and Anthropic stubs for development, and a real Claude integration for production
 
 ## Stack
