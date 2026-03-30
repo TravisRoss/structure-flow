@@ -1,6 +1,7 @@
 export type SSEEvent =
   | { type: "text_delta"; delta: string }
   | { type: "diagram"; code: string }
+  | { type: "conversation_id"; id: string }
   | { type: "done" };
 
 /**
@@ -22,13 +23,15 @@ export function parseSSEChunk(
   for (const line of lines) {
     if (!line.startsWith("data: ")) continue;
 
-    const parsed = JSON.parse(line.slice("data: ".length)) as SSEEvent;
+    const event = JSON.parse(line.slice("data: ".length)) as SSEEvent;
 
-    if (parsed.type === "text_delta" && "delta" in parsed) {
-      events.push({ type: "text_delta", delta: parsed.delta });
-    } else if (parsed.type === "diagram" && "code" in parsed) {
-      events.push({ type: "diagram", code: parsed.code });
-    } else if (parsed.type === "done") {
+    if (event.type === "text_delta" && "delta" in event) {
+      events.push({ type: "text_delta", delta: event.delta });
+    } else if (event.type === "diagram" && "code" in event) {
+      events.push({ type: "diagram", code: event.code });
+    } else if (event.type === "conversation_id" && "id" in event) {
+      events.push({ type: "conversation_id", id: event.id });
+    } else if (event.type === "done") {
       events.push({ type: "done" });
     }
   }

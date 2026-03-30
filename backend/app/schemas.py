@@ -16,6 +16,7 @@ class Message(BaseModel):
 
 class ChatRequest(BaseModel):
     messages: list[Message] = Field(..., min_length=1)
+    conversation_id: str | None = None
 
     @field_validator("messages")
     @classmethod
@@ -28,3 +29,8 @@ class ChatRequest(BaseModel):
 class ChatResponse(BaseModel):
     message: str
     diagram: str | None = None
+
+
+class ConversationResponse(BaseModel):
+    conversation_id: str
+    messages: list[Message]

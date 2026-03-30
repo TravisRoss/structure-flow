@@ -1,6 +1,6 @@
 import { z } from "zod/v4";
 
-import type { ChatRequest, ChatResponse } from "../types";
+import type { ChatRequest, ChatResponse, Message } from "../types";
 import { parseSSEChunk } from "./sse";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8000";
@@ -35,6 +35,7 @@ export async function streamMessage(
   request: ChatRequest,
   onTextDelta: (delta: string) => void,
   onDiagram: (code: string) => void,
+  onConversationId: (conversationId: string) => void,
 ): Promise<void> {
   let response: Response;
   try {
@@ -72,8 +73,26 @@ export async function streamMessage(
         onTextDelta(event.delta);
       } else if (event.type === "diagram") {
         onDiagram(event.code);
+      } else if (event.type === "conversation_id") {
+        onConversationId(event.id);
       }
     }
   }
 }
 
+export async function loadConversation(conversationId: string): Promise<Message[]> {
+  let response: Response;
+  try {
+    response = await fetch(`${API_BASE_URL}/api/conversations/${conversationId}`);
+  } catch {
+    throw new Error("Unable to reach the server. Please check that the backend is running.");
+  }
+
+  if (!response.ok) {
+    const errorResponse = await response.json().catch(() => ({ detail: "Unknown error" })) as { detail: string };
+    throw new Error(errorResponse.detail);
+  }
+
+  const body = await response.json() as { conversation_id: string; messages: Message[] };
+  return body.messages;
+}

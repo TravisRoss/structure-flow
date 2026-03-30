@@ -1,6 +1,9 @@
-import { useState } from "react";
-import { streamMessage } from "../api/client";
+import { useEffect, useState } from "react";
+
+import { loadConversation, streamMessage } from "../api/client";
 import type { Message } from "../types";
+
+const CONVERSATION_ID_KEY = "conversationId";
 
 export interface UseChat {
   messages: Message[];
@@ -11,8 +14,23 @@ export interface UseChat {
 
 export function useChat(): UseChat {
   const [messages, setMessages] = useState<Message[]>([]);
+  const [conversationId, setConversationId] = useState<string | null>(
+    localStorage.getItem(CONVERSATION_ID_KEY),
+  );
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const storedConversationId = localStorage.getItem(CONVERSATION_ID_KEY);
+    if (storedConversationId === null) return;
+
+    loadConversation(storedConversationId)
+      .then(setMessages)
+      .catch(() => {
+        localStorage.removeItem(CONVERSATION_ID_KEY);
+        setConversationId(null);
+      });
+  }, []);
 
   function updateLastMessage(updater: (lastMessage: Message) => Message): void {
     setMessages((currentMessages) => [
@@ -41,8 +59,13 @@ export function useChat(): UseChat {
       updateLastMessage((lastMessage) => ({ ...lastMessage, diagram: code }));
     }
 
+    function onConversationId(newConversationId: string): void {
+      setConversationId(newConversationId);
+      localStorage.setItem(CONVERSATION_ID_KEY, newConversationId);
+    }
+
     try {
-      await streamMessage({ messages: messagesWithUser }, onTextDelta, onDiagram);
+      await streamMessage({ messages: messagesWithUser, conversation_id: conversationId }, onTextDelta, onDiagram, onConversationId);
     } catch (caughtError) {
       const errorMessage = caughtError instanceof Error ? caughtError.message : "Unknown error";
       setError(errorMessage);

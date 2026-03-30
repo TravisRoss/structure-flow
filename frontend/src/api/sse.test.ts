@@ -52,6 +52,13 @@ describe("parseSSEChunk", () => {
     expect(buffer).toEqual("");
   });
 
+  it("parses a conversation_id event", () => {
+    const chunk = 'data: {"type":"conversation_id","id":"abc-123"}\n\n';
+    const { buffer, events } = parseSSEChunk(chunk, "");
+    expect(events).toEqual([{ type: "conversation_id", id: "abc-123" }]);
+    expect(buffer).toEqual("");
+  });
+
   it("ignores lines that do not start with data:", () => {
     const chunk = 'event: message\ndata: {"type":"done"}\n\n';
     const { events } = parseSSEChunk(chunk, "");

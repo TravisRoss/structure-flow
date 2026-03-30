@@ -16,5 +16,8 @@ frontend/test-results/
 # Vitest
 frontend/coverage/
 
+# SQLite
+backend/conversations.db
+
 # Claude Code
 .claude/*
