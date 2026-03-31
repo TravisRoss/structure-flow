@@ -59,6 +59,16 @@ describe("parseSSEChunk", () => {
     expect(buffer).toEqual("");
   });
 
+  it("parses an error event", () => {
+    const chunk =
+      'data: {"type":"error","message":"The AI service encountered an error"}\n\n';
+    const { buffer, events } = parseSSEChunk(chunk, "");
+    expect(events).toEqual([
+      { type: "error", message: "The AI service encountered an error" },
+    ]);
+    expect(buffer).toEqual("");
+  });
+
   it("ignores lines that do not start with data:", () => {
     const chunk = 'event: message\ndata: {"type":"done"}\n\n';
     const { events } = parseSSEChunk(chunk, "");

@@ -75,6 +75,8 @@ export async function streamMessage(
         onDiagram(event.code);
       } else if (event.type === "conversation_id") {
         onConversationId(event.id);
+      } else if (event.type === "error") {
+        throw new Error(event.message);
       }
     }
   }

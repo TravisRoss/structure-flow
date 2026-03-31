@@ -1,4 +1,5 @@
 import json
+import logging
 from collections.abc import AsyncIterator
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -10,6 +11,7 @@ from app.schemas import ChatRequest, ChatResponse, ConversationResponse, Message
 from app.storage import load_conversation, save_conversation
 
 router = APIRouter()
+logger = logging.getLogger(__name__)
 
 
 def dict_to_sse(data: dict) -> str:
@@ -24,18 +26,25 @@ async def stream_with_persistence(
     text_content = ""
     diagram_code = None
 
-    async for event_string in provider_stream:
-        if event_string.startswith("data: "):
-            event_data: dict[str, str] = json.loads(
-                event_string.removeprefix("data: ")
-            )
-            if event_data["type"] == "text_delta":
-                text_content += event_data["delta"]
-                yield event_string
-            elif event_data["type"] == "diagram":
-                diagram_code = event_data["code"]
-                yield event_string
-            # Skip the provider's done event — we emit our own after saving
+    try:
+        async for event_string in provider_stream:
+            if event_string.startswith("data: "):
+                event_data: dict[str, str] = json.loads(
+                    event_string.removeprefix("data: ")
+                )
+                if event_data["type"] == "text_delta":
+                    text_content += event_data["delta"]
+                    yield event_string
+                elif event_data["type"] == "diagram":
+                    diagram_code = event_data["code"]
+                    yield event_string
+                # Skip the provider's done event — we emit our own after saving
+    except Exception:
+        logger.exception("Provider stream failed")
+        error_message = "The AI service encountered an error. Please try again."
+        yield dict_to_sse({"type": "error", "message": error_message})
+        yield dict_to_sse({"type": "done"})
+        return
 
     assistant_message = Message(role=Role.assistant, content=text_content, diagram=diagram_code)
     saved_id = save_conversation(conversation_id, [*messages, assistant_message])

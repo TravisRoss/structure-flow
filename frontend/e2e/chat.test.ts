@@ -51,6 +51,24 @@ test("shows an error banner if the backend is unreachable", async ({
   ).toBeVisible();
 });
 
+test("shows an error banner when the stream contains an error event", async ({
+  page,
+}) => {
+  await page.route("**/api/chat/stream", (route) =>
+    route.fulfill({
+      status: 200,
+      headers: { "Content-Type": "text/event-stream" },
+      body: 'data: {"type":"error","message":"The AI service encountered an error. Please try again."}\n\ndata: {"type":"done"}\n\n',
+    }),
+  );
+
+  await sendMessage(page, "hi");
+
+  await expect(
+    page.getByText("The AI service encountered an error. Please try again."),
+  ).toBeVisible();
+});
+
 test("clears the input field after sending a message", async ({ page }) => {
   await sendMessage(page, "hi");
   await expect(page.getByText(STUB_TEXT_RESPONSE)).toBeVisible();

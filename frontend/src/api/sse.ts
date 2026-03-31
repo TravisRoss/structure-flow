@@ -2,6 +2,7 @@ export type SSEEvent =
   | { type: "text_delta"; delta: string }
   | { type: "diagram"; code: string }
   | { type: "conversation_id"; id: string }
+  | { type: "error"; message: string }
   | { type: "done" };
 
 /**
@@ -31,6 +32,8 @@ export function parseSSEChunk(
       events.push({ type: "diagram", code: event.code });
     } else if (event.type === "conversation_id" && "id" in event) {
       events.push({ type: "conversation_id", id: event.id });
+    } else if (event.type === "error" && "message" in event) {
+      events.push({ type: "error", message: event.message });
     } else if (event.type === "done") {
       events.push({ type: "done" });
     }

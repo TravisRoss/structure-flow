@@ -1,8 +1,13 @@
+import json
+from collections.abc import AsyncIterator
+
 import pytest
 from httpx import ASGITransport, AsyncClient
 
+from app.api.routes.chat import stream_with_persistence
 from app.core.config import Settings, get_settings
 from app.main import app
+from app.schemas import Message, Role
 
 
 @pytest.fixture(autouse=True)
@@ -58,3 +63,21 @@ class TestChatEndpoint:
             ],
         })
         assert response.status_code == 422
+
+
+class TestStreamWithPersistence:
+    async def test_yields_error_and_done_when_provider_raises(self) -> None:
+        async def failing_stream() -> AsyncIterator[str]:
+            yield 'data: {"type":"text_delta","delta":"Hello"}\n\n'
+            raise Exception("Provider failed")
+
+        messages = [Message(role=Role.user, content="test")]
+        events = [
+            json.loads(event_string.removeprefix("data: "))
+            async for event_string in stream_with_persistence(failing_stream(), messages, None)
+        ]
+
+        assert events[0] == {"type": "text_delta", "delta": "Hello"}
+        assert events[1]["type"] == "error"
+        assert "message" in events[1]
+        assert events[2] == {"type": "done"}
