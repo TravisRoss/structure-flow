@@ -14,22 +14,17 @@ export interface UseChat {
 
 export function useChat(): UseChat {
   const [messages, setMessages] = useState<Message[]>([]);
-  const [conversationId, setConversationId] = useState<string | null>(
-    localStorage.getItem(CONVERSATION_ID_KEY),
-  );
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Load conversation from localStorage on initial render
   useEffect(() => {
-    const storedConversationId = localStorage.getItem(CONVERSATION_ID_KEY);
-    if (storedConversationId === null) return;
+    const conversationId = localStorage.getItem(CONVERSATION_ID_KEY);
+    if (conversationId === null) return;
 
-    loadConversation(storedConversationId)
+    loadConversation(conversationId)
       .then(setMessages)
-      .catch(() => {
-        localStorage.removeItem(CONVERSATION_ID_KEY);
-        setConversationId(null);
-      });
+      .catch(() => localStorage.removeItem(CONVERSATION_ID_KEY));
   }, []);
 
   function updateLastMessage(updater: (lastMessage: Message) => Message): void {
@@ -37,6 +32,21 @@ export function useChat(): UseChat {
       ...currentMessages.slice(0, -1),
       updater(currentMessages[currentMessages.length - 1]),
     ]);
+  }
+
+  function handleTextDelta(delta: string): void {
+    updateLastMessage((lastMessage) => ({
+      ...lastMessage,
+      content: lastMessage.content + delta,
+    }));
+  }
+
+  function handleDiagram(code: string): void {
+    updateLastMessage((lastMessage) => ({ ...lastMessage, diagram: code }));
+  }
+
+  function handleConversationId(conversationId: string): void {
+    localStorage.setItem(CONVERSATION_ID_KEY, conversationId);
   }
 
   async function submitMessage(userInputText: string): Promise<void> {
@@ -48,26 +58,19 @@ export function useChat(): UseChat {
     const messagesWithUser = [...messages, userMessage];
     setMessages([...messagesWithUser, assistantPlaceholder]);
 
-    function onTextDelta(delta: string): void {
-      updateLastMessage((lastMessage) => ({
-        ...lastMessage,
-        content: lastMessage.content + delta,
-      }));
-    }
-
-    function onDiagram(code: string): void {
-      updateLastMessage((lastMessage) => ({ ...lastMessage, diagram: code }));
-    }
-
-    function onConversationId(newConversationId: string): void {
-      setConversationId(newConversationId);
-      localStorage.setItem(CONVERSATION_ID_KEY, newConversationId);
-    }
-
     try {
-      await streamMessage({ messages: messagesWithUser, conversation_id: conversationId }, onTextDelta, onDiagram, onConversationId);
+      await streamMessage(
+        {
+          messages: messagesWithUser,
+          conversation_id: localStorage.getItem(CONVERSATION_ID_KEY),
+        },
+        handleTextDelta,
+        handleDiagram,
+        handleConversationId,
+      );
     } catch (caughtError) {
-      const errorMessage = caughtError instanceof Error ? caughtError.message : "Unknown error";
+      const errorMessage =
+        caughtError instanceof Error ? caughtError.message : "Unknown error";
       setError(errorMessage);
       setMessages(messagesWithUser);
     } finally {
