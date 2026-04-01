@@ -6,9 +6,9 @@ from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import StreamingResponse
 
 from app.core.config import Settings, get_settings
+from app.db import load_conversation, save_conversation
 from app.providers.factory import get_provider
 from app.schemas import ChatRequest, ChatResponse, ConversationResponse, Message, Role
-from app.storage import load_conversation, save_conversation
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -41,7 +41,7 @@ async def stream_with_persistence(
                 # Skip the provider's done event — we emit our own after saving
     except Exception:
         logger.exception("Provider stream failed")
-        error_message = "The AI service encountered an error. Please try again."
+        error_message = "The AI service encountered an error. Please try again or switch to a different model if the issue persists."
         yield dict_to_sse({"type": "error", "message": error_message})
         yield dict_to_sse({"type": "done"})
         return

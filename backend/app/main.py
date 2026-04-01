@@ -6,7 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.routes.chat import router as chat_router
 from app.core.config import get_settings
-from app.storage import init_db
+from app.db import init_db
 
 settings = get_settings()
 
